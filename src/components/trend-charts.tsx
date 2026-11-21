@@ -48,6 +48,12 @@ const GROUP_COLORS: Record<(typeof CONTRIB_GROUPS)[number], string> = {
 
 const percentTick = (value: number) => `${value}%`;
 
+/** 縦軸を整数の%で区切る（0 は必ず含める） */
+const niceDomain: [(min: number) => number, (max: number) => number] = [
+  (min) => Math.min(0, Math.floor(min)),
+  (max) => Math.max(0, Math.ceil(max)),
+];
+
 function Card({
   title,
   description,
@@ -144,6 +150,8 @@ export function TrendCharts({
               {xAxis}
               <YAxis
                 tickFormatter={percentTick}
+                domain={niceDomain}
+                allowDecimals={false}
                 tickLine={false}
                 axisLine={false}
                 width={44}
@@ -155,7 +163,7 @@ export function TrendCharts({
                 strokeDasharray="4 4"
                 label={{
                   value: "物価目標 2%",
-                  position: "insideTopLeft",
+                  position: "insideBottomRight",
                   fill: "var(--text-muted)",
                   fontSize: 12,
                 }}
@@ -240,6 +248,8 @@ export function TrendCharts({
               {xAxis}
               <YAxis
                 tickFormatter={percentTick}
+                domain={niceDomain}
+                allowDecimals={false}
                 tickLine={false}
                 axisLine={false}
                 width={44}
