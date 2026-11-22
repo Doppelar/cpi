@@ -4,12 +4,14 @@ import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
+  errorText,
   INTERVIEW_TOPICS,
   type InterviewTopic,
   isClosingMessage,
   MAX_ANSWER_LENGTH,
   messageText,
 } from "@/lib/interview/topics";
+import { VoiceInput } from "./voice-input";
 
 function newId() {
   return typeof crypto !== "undefined" && "randomUUID" in crypto
@@ -34,7 +36,11 @@ export function InterviewChat({
     () => new DefaultChatTransport({ api: "/api/interview", body: { topic } }),
     [topic]
   );
-  const { messages, sendMessage, status, error } = useChat({ id, messages: initial, transport });
+  const { messages, sendMessage, regenerate, clearError, status, error } = useChat({
+    id,
+    messages: initial,
+    transport,
+  });
   const [input, setInput] = useState("");
   const [ready, setReady] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -93,11 +99,21 @@ export function InterviewChat({
       <div ref={bottomRef} />
 
       {error && (
-        <p role="alert" className="mx-4 mb-3 rounded-lg bg-up-soft px-3 py-2 text-sm">
-          {error.message?.includes("{")
-            ? "うまく送れませんでした。少し時間をおいて、もう一度送ってください。"
-            : error.message || "うまく送れませんでした。もう一度送ってください。"}
-        </p>
+        <div role="alert" className="mx-4 mb-3 space-y-2 rounded-lg bg-up-soft px-3 py-2 text-sm">
+          <p>{errorText(error.message)}</p>
+          {messages[messages.length - 1]?.role === "user" && (
+            <button
+              type="button"
+              onClick={() => {
+                clearError();
+                void regenerate();
+              }}
+              className="rounded-full border border-line bg-card px-3 py-1 font-semibold"
+            >
+              もう一度送る
+            </button>
+          )}
+        </div>
       )}
 
       {finished ? (
@@ -128,9 +144,15 @@ export function InterviewChat({
               }
             }}
             rows={3}
-            placeholder="ここに回答を書いてください（短くても大丈夫です）"
+            placeholder="ここに回答を書いてください（短くても大丈夫です）。下のボタンで話して入力することもできます"
             className="w-full rounded-lg border border-line bg-card px-3 py-2 text-base"
             aria-label="回答"
+          />
+          <VoiceInput
+            disabled={busy}
+            onText={(text) =>
+              setInput((current) => `${current}${text}`.slice(0, MAX_ANSWER_LENGTH))
+            }
           />
           <div className="flex items-center justify-between gap-2">
             <span className="tabular text-xs text-ink-3">

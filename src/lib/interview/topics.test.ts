@@ -3,6 +3,7 @@ import {
   buildInstructions,
   CLOSING_PHRASE,
   checkConversation,
+  errorText,
   MAX_ANSWER_LENGTH,
   MAX_USER_TURNS,
   messageText,
@@ -67,5 +68,17 @@ describe("checkConversation", () => {
     expect(
       checkConversation([ai(`${CLOSING_PHRASE}。ありがとうございました。`), user("まだ話したい")])
     ).toMatchObject({ ok: false, status: 409 });
+  });
+});
+
+describe("errorText", () => {
+  it("サーバーの JSON の error を取り出し、読めないときは決まった文にする", () => {
+    expect(errorText('{"error":"今日はたくさんのインタビューにご協力いただきました。"}')).toBe(
+      "今日はたくさんのインタビューにご協力いただきました。"
+    );
+    expect(errorText("{壊れた")).toContain("うまく送れませんでした");
+    expect(errorText("Failed to fetch")).toContain("うまく送れませんでした");
+    expect(errorText("AIの応答でエラーが起きました。")).toBe("AIの応答でエラーが起きました。");
+    expect(errorText(undefined)).toContain("うまく送れませんでした");
   });
 });

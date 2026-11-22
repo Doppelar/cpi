@@ -149,3 +149,22 @@ export function checkConversation(messages: readonly ChatMessageLike[]): Intervi
   }
   return { ok: true, userTurns };
 }
+
+/**
+ * 送信エラーの表示文。サーバーが返した JSON の { error } があればそれを使い、
+ * 中身が読めないときは決まった文にする。
+ */
+export function errorText(message: string | undefined): string {
+  const fallback = "うまく送れませんでした。少し時間をおいて、もう一度送ってください。";
+  if (!message) return fallback;
+  const trimmed = message.trim();
+  if (trimmed.startsWith("{")) {
+    try {
+      const parsed = JSON.parse(trimmed) as { error?: unknown };
+      return typeof parsed.error === "string" && parsed.error ? parsed.error : fallback;
+    } catch {
+      return fallback;
+    }
+  }
+  return /[ぁ-んァ-ン一-龯]/.test(trimmed) ? trimmed : fallback;
+}

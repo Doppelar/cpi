@@ -29,13 +29,14 @@ function ensureSchema() {
 }
 
 /** 同じ送信元が1日に始められるインタビューの数 */
-const DAILY_SESSIONS = 5;
+const DAILY_SESSIONS = 20;
 
 /** この会話を続けてよいか（新しい会話なら、1日の上限を超えていないか） */
 export async function canContinue(id: string, sender: string): Promise<boolean> {
   await ensureSchema();
   const existing = await sql()`SELECT sender_hash FROM interview_sessions WHERE id = ${id}`;
-  if (existing[0]) return existing[0].sender_hash === sender;
+  // 始めたインタビューは、回線が変わっても（Wi-Fi とモバイルの切り替えなど）続けられるようにする
+  if (existing[0]) return true;
   const rows = await sql()`
     SELECT COUNT(*)::int AS count FROM interview_sessions
     WHERE sender_hash = ${sender} AND created_at > NOW() - INTERVAL '1 day'`;
