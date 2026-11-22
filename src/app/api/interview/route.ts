@@ -12,9 +12,13 @@ import {
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
-/** 使う AI（Vercel AI Gateway 経由。混雑・障害のときは次のモデルに切り替える） */
-const MODEL = "anthropic/claude-haiku-5.5";
-const FALLBACK_MODELS = ["google/gemini-3.5-flash-lite", "openai/gpt-5-mini"];
+/**
+ * 使う AI（Vercel AI Gateway 経由。混雑・障害のときは次のモデルに切り替える）。
+ * AI Gateway の無料枠で使えて、考える時間（推論）なしにすぐ返すモデルを選ぶ。
+ * 有料クレジットにすれば、より高性能なモデル（Claude Haiku など）も使える。
+ */
+const MODEL = "google/gemini-2.5-flash-lite";
+const FALLBACK_MODELS = ["openai/gpt-4.1-mini", "openai/gpt-4o-mini"];
 
 export async function POST(request: NextRequest) {
   let body: { id?: unknown; topic?: unknown; messages?: unknown };
