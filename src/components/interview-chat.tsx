@@ -11,7 +11,6 @@ import {
   MAX_ANSWER_LENGTH,
   messageText,
 } from "@/lib/interview/topics";
-import { VoiceInput } from "./voice-input";
 
 function newId() {
   return typeof crypto !== "undefined" && "randomUUID" in crypto
@@ -136,15 +135,9 @@ export function InterviewChat({
               }
             }}
             rows={3}
-            placeholder="ここに回答を書いてください（短くても大丈夫です）。下のボタンで話して入力することもできます"
+            placeholder="ここに回答を書いてください（短くても大丈夫です）"
             className="w-full rounded-lg border border-line bg-card px-3 py-2 text-base"
             aria-label="回答"
-          />
-          <VoiceInput
-            disabled={busy}
-            onText={(text) =>
-              setInput((current) => `${current}${text}`.slice(0, MAX_ANSWER_LENGTH))
-            }
           />
           <div className="flex items-center justify-between gap-2">
             <span className="tabular text-xs text-ink-3">
