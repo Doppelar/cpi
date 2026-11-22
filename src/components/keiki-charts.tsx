@@ -9,11 +9,11 @@ import {
   LineChart,
   ReferenceArea,
   ReferenceLine,
-  ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
+import { ChartFrame } from "./chart-frame";
 import { formatMonth, formatMonthShort } from "@/lib/cpi/areas";
 import { formatSigned } from "@/lib/cpi/chart-data";
 import {
@@ -151,9 +151,11 @@ export function KeikiCharts({
             />
           ))}
         </div>
-        <div className="h-72 sm:h-96">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={ciData} margin={{ top: 8, right: 12, bottom: 0, left: 0 }}>
+        <ChartFrame className="h-72 sm:h-96">
+          {({ width, height }) => (
+            <LineChart
+              width={width}
+              height={height} data={ciData} margin={{ top: 8, right: 12, bottom: 0, left: 0 }}>
               <CartesianGrid vertical={false} stroke="var(--grid)" />
               {recessionAreas(first, latest.ym)}
               {xAxis}
@@ -194,8 +196,8 @@ export function KeikiCharts({
                 />
               ))}
             </LineChart>
-          </ResponsiveContainer>
-        </div>
+          )}
+        </ChartFrame>
         {recessionNote}
         <DataTable
           caption="CI 先行・一致・遅行指数"
@@ -225,9 +227,11 @@ export function KeikiCharts({
             />
           ))}
         </div>
-        <div className="h-72 sm:h-80">
-          <ResponsiveContainer width="100%" height="100%">
+        <ChartFrame className="h-72 sm:h-80">
+          {({ width, height }) => (
             <ComposedChart
+              width={width}
+              height={height}
               data={contribData}
               stackOffset="sign"
               barCategoryGap="15%"
@@ -289,8 +293,8 @@ export function KeikiCharts({
                 isAnimationActive={false}
               />
             </ComposedChart>
-          </ResponsiveContainer>
-        </div>
+          )}
+        </ChartFrame>
         <p className="mt-2 text-xs text-ink-3">
           生産・出荷：鉱工業の生産・出荷の指数／雇用：労働投入量・有効求人倍率／販売：小売・卸売の販売額／企業収益：営業利益／輸出：輸出数量。単位はポイント。
         </p>
@@ -319,9 +323,11 @@ export function KeikiCharts({
             />
           ))}
         </div>
-        <div className="h-56 sm:h-64">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={ciData} margin={{ top: 8, right: 12, bottom: 0, left: 0 }}>
+        <ChartFrame className="h-56 sm:h-64">
+          {({ width, height }) => (
+            <LineChart
+              width={width}
+              height={height} data={ciData} margin={{ top: 8, right: 12, bottom: 0, left: 0 }}>
               <CartesianGrid vertical={false} stroke="var(--grid)" />
               {recessionAreas(first, latest.ym)}
               {xAxis}
@@ -364,8 +370,8 @@ export function KeikiCharts({
                 />
               ))}
             </LineChart>
-          </ResponsiveContainer>
-        </div>
+          )}
+        </ChartFrame>
         {recessionNote}
       </Card>
     </section>

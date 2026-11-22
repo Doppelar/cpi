@@ -9,11 +9,11 @@ import {
   Line,
   LineChart,
   ReferenceLine,
-  ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
+import { ChartFrame } from "./chart-frame";
 import { type AreaId, formatMonth, formatMonthShort } from "@/lib/cpi/areas";
 import { formatSigned } from "@/lib/cpi/chart-data";
 import type { ItemPoint, MonthItem } from "@/lib/cpi/types";
@@ -115,9 +115,11 @@ export function ItemDetail({
             {yoyPoints.length === 0 ? (
               <p className="text-sm text-ink-3">まだ1年分のデータがありません。</p>
             ) : (
-              <div className="h-56">
-                <ResponsiveContainer width="100%" height="100%">
+              <ChartFrame className="h-56">
+                {({ width, height }) => (
                   <BarChart
+                    width={width}
+                    height={height}
                     data={yoyPoints}
                     margin={{ top: 8, right: 8, bottom: 0, left: 0 }}
                     barCategoryGap="15%"
@@ -170,8 +172,8 @@ export function ItemDetail({
                       ))}
                     </Bar>
                   </BarChart>
-                </ResponsiveContainer>
-              </div>
+                )}
+              </ChartFrame>
             )}
             <p className="mt-1 text-xs text-ink-3">
               濃い棒が{formatMonth(selectedYm)}です。
@@ -184,9 +186,11 @@ export function ItemDetail({
                 2025年基準につなげられる指数がありません。
               </p>
             ) : (
-              <div className="h-56">
-                <ResponsiveContainer width="100%" height="100%">
+              <ChartFrame className="h-56">
+                {({ width, height }) => (
                   <LineChart
+                    width={width}
+                    height={height}
                     data={indexPoints}
                     margin={{ top: 8, right: 8, bottom: 0, left: 0 }}
                   >
@@ -240,8 +244,8 @@ export function ItemDetail({
                       isAnimationActive={false}
                     />
                   </LineChart>
-                </ResponsiveContainer>
-              </div>
+                )}
+              </ChartFrame>
             )}
             <p className="mt-1 text-xs text-ink-3">
               100より上なら、2025年の平均より高い値段です。

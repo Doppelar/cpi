@@ -8,11 +8,11 @@ import {
   Line,
   LineChart,
   ReferenceLine,
-  ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
+import { ChartFrame } from "./chart-frame";
 import { formatMonth, formatMonthShort } from "@/lib/cpi/areas";
 import {
   type ContribRow,
@@ -140,9 +140,11 @@ export function TrendCharts({
             />
           ))}
         </div>
-        <div className="h-72 sm:h-80">
-          <ResponsiveContainer width="100%" height="100%">
+        <ChartFrame className="h-72 sm:h-80">
+          {({ width, height }) => (
             <LineChart
+              width={width}
+              height={height}
               data={headlineData}
               margin={{ top: 8, right: 12, bottom: 0, left: 0 }}
             >
@@ -205,8 +207,8 @@ export function TrendCharts({
                 />
               ))}
             </LineChart>
-          </ResponsiveContainer>
-        </div>
+          )}
+        </ChartFrame>
         <DataTable
           caption="総合・コア・コアコアの前年同月比"
           headers={["年月", ...HEADLINE_SERIES.map((s) => s.label)]}
@@ -236,9 +238,11 @@ export function TrendCharts({
             />
           ))}
         </div>
-        <div className="h-80 sm:h-96">
-          <ResponsiveContainer width="100%" height="100%">
+        <ChartFrame className="h-80 sm:h-96">
+          {({ width, height }) => (
             <ComposedChart
+              width={width}
+              height={height}
               data={contribData}
               stackOffset="sign"
               barCategoryGap="18%"
@@ -306,8 +310,8 @@ export function TrendCharts({
                 isAnimationActive={false}
               />
             </ComposedChart>
-          </ResponsiveContainer>
-        </div>
+          )}
+        </ChartFrame>
         <p className="mt-2 text-xs text-ink-3">
           「その他」は被服及び履物・保健医療・教育の合計。単位のpt（ポイント）は、総合の上昇率のうち何%分を担ったかを表します。
         </p>

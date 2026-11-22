@@ -4,10 +4,10 @@ import {
   Line,
   LineChart,
   ReferenceLine,
-  ResponsiveContainer,
   Tooltip,
   YAxis,
 } from "recharts";
+import { ChartFrame } from "./chart-frame";
 import { shiftMonth } from "@/lib/cpi/derive";
 import { formatMonth } from "@/lib/cpi/areas";
 import { formatSigned } from "@/lib/cpi/chart-data";
@@ -58,9 +58,11 @@ export function WatchGrid({
             <p className="text-xs text-ink-3">
               {latest ? formatMonth(latest.ym) : ""}・前年同月比
             </p>
-            <div className="mt-2 h-16">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={rows} margin={{ top: 4, right: 4, bottom: 4, left: 4 }}>
+            <ChartFrame className="mt-2 h-16">
+              {({ width, height }) => (
+                <LineChart
+                  width={width}
+                  height={height} data={rows} margin={{ top: 4, right: 4, bottom: 4, left: 4 }}>
                   <YAxis hide domain={["auto", "auto"]} />
                   <ReferenceLine y={0} stroke="var(--axis)" />
                   <Tooltip
@@ -93,8 +95,8 @@ export function WatchGrid({
                     isAnimationActive={false}
                   />
                 </LineChart>
-              </ResponsiveContainer>
-            </div>
+              )}
+            </ChartFrame>
           </div>
         ))}
       </div>
