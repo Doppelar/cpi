@@ -17,6 +17,7 @@ const NAV = [
   { href: "/tokyo", label: "東京都区部" },
   { href: "/keiki", label: "景気動向指数" },
   { href: "/about", label: "CPIとは" },
+  { href: "/feedback", label: "ご意見" },
 ];
 
 export default function RootLayout({

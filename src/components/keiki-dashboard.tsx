@@ -9,6 +9,7 @@ import {
 } from "@/lib/keiki/queries";
 import { DI_PAGE_URL } from "@/lib/keiki/source";
 import { KeikiIntroNote } from "./easy-notes";
+import { FeedbackLink } from "./feedback-link";
 import { JudgmentBadge } from "./judgment-badge";
 import { KeikiCharts } from "./keiki-charts";
 import { KeikiMonthExplorer } from "./keiki-month-explorer";
@@ -144,6 +145,8 @@ export async function KeikiDashboard({ requestedYm }: { requestedYm?: string }) 
       />
 
       <KeikiAbout />
+
+      <FeedbackLink from="/keiki" subject="景気動向指数" />
 
       <p className="text-xs text-ink-3">
         出典：内閣府経済社会総合研究所「景気動向指数」（

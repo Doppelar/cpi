@@ -14,6 +14,7 @@ import {
 } from "@/lib/cpi/queries";
 import { HEADLINE_CODES, type HeadlinePoint, WATCH_NAMES } from "@/lib/cpi/types";
 import { CpiIntroNote } from "./easy-notes";
+import { FeedbackLink } from "./feedback-link";
 import { MonthExplorer } from "./month-explorer";
 import { TrendCharts } from "./trend-charts";
 import { WatchGrid } from "./watch-grid";
@@ -190,6 +191,8 @@ export async function AreaDashboard({
       />
 
       <WatchGrid points={watch} names={WATCH_NAMES} />
+
+      <FeedbackLink from={info.path} subject={`${info.label}の消費者物価指数`} />
 
       <p className="text-xs text-ink-3">データの期間：{info.coverage}</p>
     </div>
