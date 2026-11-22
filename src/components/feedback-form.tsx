@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { type FeedbackState, submitFeedback } from "@/app/feedback/actions";
 import {
   BODY_MAX,
@@ -28,6 +28,9 @@ export function FeedbackForm({
     { status: "idle" }
   );
   const [length, setLength] = useState(0);
+  // 画面の準備（読み込み）が終わるまでは送信ボタンを押せないようにする
+  const [ready, setReady] = useState(false);
+  useEffect(() => setReady(true), []);
 
   if (state.status === "sent") {
     return (
@@ -147,10 +150,10 @@ export function FeedbackForm({
 
       <button
         type="submit"
-        disabled={pending}
+        disabled={pending || !ready}
         className="w-full rounded-full bg-accent px-6 py-3 font-bold text-white disabled:opacity-60 sm:w-auto"
       >
-        {pending ? "送信しています…" : "送信する"}
+        {!ready ? "準備中…" : pending ? "送信しています…" : "送信する"}
       </button>
     </form>
   );
