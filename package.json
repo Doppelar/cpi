@@ -12,7 +12,9 @@
   },
   "packageManager": "pnpm@10.34.8",
   "dependencies": {
+    "@ai-sdk/react": "^4.0.183",
     "@neondatabase/serverless": "^1.2.1",
+    "ai": "^7.0.179",
     "next": "15.5.29",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",

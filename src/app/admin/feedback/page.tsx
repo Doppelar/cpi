@@ -2,10 +2,12 @@ import type { Metadata } from "next";
 import { formatMonth } from "@/lib/cpi/areas";
 import { listFeedback } from "@/lib/feedback/store";
 import { listImpressions } from "@/lib/impressions/store";
+import { listInterviewSessions } from "@/lib/interview/store";
+import { INTERVIEW_TOPICS, isInterviewTopic } from "@/lib/interview/topics";
 import { isSurveyId, SURVEYS } from "@/lib/impressions/surveys";
 
 export const metadata: Metadata = {
-  title: "ご意見・感想の一覧（管理）",
+  title: "ご意見・感想・インタビューの一覧（管理）",
   robots: { index: false, follow: false },
 };
 
@@ -23,7 +25,11 @@ const dateFormat = new Intl.DateTimeFormat("ja-JP", {
 
 /** 届いたご意見の一覧。middleware のパスワードで守る */
 export default async function FeedbackAdminPage() {
-  const [rows, impressions] = await Promise.all([listFeedback(), listImpressions()]);
+  const [rows, impressions, sessions] = await Promise.all([
+    listFeedback(),
+    listImpressions(),
+    listInterviewSessions(),
+  ]);
   const byTopic = new Map<string, number>();
   for (const row of rows) byTopic.set(row.topic, (byTopic.get(row.topic) ?? 0) + 1);
   return (
@@ -31,6 +37,7 @@ export default async function FeedbackAdminPage() {
       <nav className="flex gap-3 text-sm">
         <a href="#feedback" className="text-accent underline">ご意見・ご要望</a>
         <a href="#impressions" className="text-accent underline">指数を見た感想（{impressions.length}件）</a>
+        <a href="#interviews" className="text-accent underline">AIインタビュー（{sessions.length}件）</a>
       </nav>
       <h1 id="feedback" className="text-2xl font-bold">ご意見の一覧</h1>
       <p className="text-sm text-ink-2">
@@ -96,6 +103,40 @@ export default async function FeedbackAdminPage() {
             </li>
           );
         })}
+      </ul>
+      <h2 id="interviews" className="pt-6 text-2xl font-bold">AIインタビュー</h2>
+      <p className="text-sm text-ink-2">
+        全{sessions.length}件（新しい順、最大200件）。完了：{sessions.filter((s) => s.completed).length}件。
+      </p>
+      <ul className="space-y-3">
+        {sessions.map((session) => (
+          <li key={session.id} className="rounded-xl border border-line bg-card p-4">
+            <details>
+              <summary className="cursor-pointer">
+                <span className="tabular text-xs text-ink-3">{dateFormat.format(new Date(session.createdAt))}</span>
+                <span className="ml-2 rounded-full bg-surface-2 px-2 py-0.5 text-xs text-ink-2">
+                  {isInterviewTopic(session.topic) ? INTERVIEW_TOPICS[session.topic].short : session.topic}
+                </span>
+                <span className="ml-2 text-xs text-ink-3">
+                  回答{session.userTurns}回・{session.completed ? "完了" : "途中"}
+                </span>
+                <span className="mt-1 block truncate text-sm">
+                  {session.transcript.find((line) => line.role === "user")?.text ?? ""}
+                </span>
+              </summary>
+              <ol className="mt-3 space-y-2 text-sm">
+                {session.transcript.map((line, i) => (
+                  <li key={`${session.id}-${i}`} className={line.role === "user" ? "pl-6" : ""}>
+                    <span className="mr-1 text-xs font-semibold text-ink-3">
+                      {line.role === "user" ? "回答" : "AI"}
+                    </span>
+                    <span className="whitespace-pre-wrap">{line.text}</span>
+                  </li>
+                ))}
+              </ol>
+            </details>
+          </li>
+        ))}
       </ul>
     </div>
   );

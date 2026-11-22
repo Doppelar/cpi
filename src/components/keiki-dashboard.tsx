@@ -12,6 +12,7 @@ import { KeikiIntroNote } from "./easy-notes";
 import { getSurveyResult, RESULT_DAYS } from "@/lib/impressions/store";
 import { FeedbackLink } from "./feedback-link";
 import { ImpressionSurvey } from "./impression-survey";
+import { InterviewLink } from "./interview-link";
 import { JudgmentBadge } from "./judgment-badge";
 import { KeikiCharts } from "./keiki-charts";
 import { KeikiMonthExplorer } from "./keiki-month-explorer";
@@ -143,6 +144,7 @@ export async function KeikiDashboard({ requestedYm }: { requestedYm?: string }) 
           days={RESULT_DAYS}
         />
       )}
+      <InterviewLink topic="keiki" subject="景気" />
 
       <KeikiMonthExplorer
         months={months}

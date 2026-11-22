@@ -17,6 +17,7 @@ import { CpiIntroNote } from "./easy-notes";
 import { getSurveyResult, RESULT_DAYS } from "@/lib/impressions/store";
 import { FeedbackLink } from "./feedback-link";
 import { ImpressionSurvey } from "./impression-survey";
+import { InterviewLink } from "./interview-link";
 import { MonthExplorer } from "./month-explorer";
 import { TrendCharts } from "./trend-charts";
 import { WatchGrid } from "./watch-grid";
@@ -200,6 +201,7 @@ export async function AreaDashboard({
           days={RESULT_DAYS}
         />
       )}
+      <InterviewLink topic={survey} subject={`${info.label}の物価`} />
 
       <MonthExplorer
         area={area}
