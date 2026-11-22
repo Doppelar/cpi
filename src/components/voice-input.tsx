@@ -9,6 +9,7 @@ type Recognition = {
   continuous: boolean;
   start: () => void;
   stop: () => void;
+  abort: () => void;
   onresult: ((event: { resultIndex: number; results: ArrayLike<ArrayLike<{ transcript: string }> & { isFinal: boolean }> }) => void) | null;
   onerror: ((event: { error: string }) => void) | null;
   onend: (() => void) | null;
@@ -40,12 +41,18 @@ export function VoiceInput({
   const [interim, setInterim] = useState("");
   const [problem, setProblem] = useState<string | null>(null);
   const recognitionRef = useRef<Recognition | null>(null);
+  /** まだ確定していない聞き取り途中の言葉（止めたときに入力欄へ入れる） */
+  const interimRef = useRef("");
   const onTextRef = useRef(onText);
   onTextRef.current = onText;
 
   useEffect(() => {
     setSupported(createRecognition() !== null);
-    return () => recognitionRef.current?.stop();
+    return () => {
+      const recognition = recognitionRef.current;
+      recognitionRef.current = null;
+      recognition?.abort();
+    };
   }, []);
 
   const start = () => {
@@ -53,8 +60,10 @@ export function VoiceInput({
     if (!recognition) return;
     recognition.lang = "ja-JP";
     recognition.interimResults = true;
-    recognition.continuous = true;
+    // iPhone の Safari では続けて聞き取るモードが止まりにくいため、話し終えると自動で止まるモードにする
+    recognition.continuous = false;
     recognition.onresult = (event) => {
+      if (recognitionRef.current !== recognition) return;
       let pending = "";
       for (let i = event.resultIndex; i < event.results.length; i++) {
         const result = event.results[i];
@@ -62,9 +71,12 @@ export function VoiceInput({
         if (result.isFinal) onTextRef.current(text);
         else pending += text;
       }
+      interimRef.current = pending;
       setInterim(pending);
     };
     recognition.onerror = (event) => {
+      // 自分で止めたとき（aborted）や、止めたあとの通知はエラーとして出さない
+      if (recognitionRef.current !== recognition || event.error === "aborted") return;
       setProblem(
         event.error === "not-allowed" || event.error === "service-not-allowed"
           ? "マイクの使用が許可されていません。ブラウザの設定でマイクを許可してください。"
@@ -74,6 +86,11 @@ export function VoiceInput({
       );
     };
     recognition.onend = () => {
+      if (recognitionRef.current !== recognition) return;
+      // 確定しないまま終わった言葉も、入力欄に入れる
+      if (interimRef.current) onTextRef.current(interimRef.current);
+      interimRef.current = "";
+      recognitionRef.current = null;
       setListening(false);
       setInterim("");
     };
@@ -87,7 +104,24 @@ export function VoiceInput({
     }
   };
 
-  const stop = () => recognitionRef.current?.stop();
+  /** 押したらすぐ止める：聞き取り途中の言葉を入力欄に入れてから、聞き取りを打ち切る */
+  const stop = () => {
+    const recognition = recognitionRef.current;
+    recognitionRef.current = null;
+    if (interimRef.current) onTextRef.current(interimRef.current);
+    interimRef.current = "";
+    setListening(false);
+    setInterim("");
+    try {
+      recognition?.abort();
+    } catch {
+      try {
+        recognition?.stop();
+      } catch {
+        // すでに止まっている
+      }
+    }
+  };
 
   if (!supported) return null;
   return (
@@ -104,9 +138,13 @@ export function VoiceInput({
         }`}
       >
         <span aria-hidden className={`inline-block h-2.5 w-2.5 rounded-full ${listening ? "animate-pulse bg-white" : "bg-up"}`} />
-        {listening ? "聞き取り中…（押すと止まります）" : "話して入力する"}
+        {listening ? "止める" : "話して入力する"}
       </button>
-      {interim && <p className="text-sm text-ink-3">{interim}</p>}
+      {listening && (
+        <p className="text-sm text-ink-3">
+          {interim || "聞き取り中です。話し終えると自動で止まります。"}
+        </p>
+      )}
       {problem && <p className="text-sm text-up">{problem}</p>}
     </div>
   );
