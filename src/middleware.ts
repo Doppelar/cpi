@@ -1,15 +1,10 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { isAdminAuthorization } from "@/lib/admin-auth";
 
 /** 管理ページ（/admin）を、ベーシック認証のパスワードで守る */
 export function middleware(request: NextRequest) {
-  const password = process.env.FEEDBACK_ADMIN_PASSWORD;
-  const header = request.headers.get("authorization") ?? "";
-  if (password && header.startsWith("Basic ")) {
-    const decoded = atob(header.slice(6));
-    const given = decoded.slice(decoded.indexOf(":") + 1);
-    if (given.length === password.length && given === password) {
-      return NextResponse.next();
-    }
+  if (isAdminAuthorization(request.headers.get("authorization"))) {
+    return NextResponse.next();
   }
   return new NextResponse("パスワードが必要です", {
     status: 401,

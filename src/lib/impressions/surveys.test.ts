@@ -25,6 +25,7 @@ describe("validateImpression", () => {
         },
         age: "40代",
         comment: "スーパーに行くたびに高いと感じます。",
+        publish: false,
       },
     });
   });

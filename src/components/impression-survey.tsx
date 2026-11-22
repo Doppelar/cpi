@@ -152,7 +152,7 @@ export function ImpressionSurvey({
       <div>
         <h2 className="text-xl font-bold">この数字を見て、あなたはどう感じますか？</h2>
         <p className="mt-1 text-sm text-ink-2">
-          {formatMonth(ym)}の{definition.title}について、あなたの実感を教えてください。ボタンを選ぶだけで、30秒ほどで終わります。回答は匿名で、選んだ結果は「みんなの実感」として下に集計されます。
+          {formatMonth(ym)}の{definition.title}について、あなたの実感を教えてください。ボタンを選ぶだけで、30秒ほどで終わります。回答は匿名で、選んだ結果は「みんなの実感」として下に集計されます。書いた感想は、公開してよいを選んだときだけ「みんなの声」に載ります。
         </p>
       </div>
 
@@ -233,10 +233,17 @@ export function ImpressionSurvey({
                 className="w-full rounded-lg border border-line bg-card px-3 py-2 text-base"
               />
               <p className="text-right text-xs text-ink-3">
-                {length} / {COMMENT_MAX}文字（自由記入は公開しません）
+                {length} / {COMMENT_MAX}文字
               </p>
             </div>
           </div>
+          <label className="flex items-start gap-2 rounded-lg bg-surface-2 px-3 py-2.5 text-sm">
+            <input type="checkbox" name="publish" defaultChecked className="mt-0.5 h-4 w-4 accent-[var(--accent)]" />
+            <span>
+              書いた感想を「みんなの声」のページで公開してよい
+              <span className="block text-xs text-ink-3">お名前・メールアドレスは公開しません。電話番号などの連絡先は自動で伏せ字にします。</span>
+            </span>
+          </label>
 
           <button
             type="submit"

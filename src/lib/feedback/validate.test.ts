@@ -19,8 +19,14 @@ describe("validateFeedback", () => {
         body: "グラフが見やすいです。\nありがとうございます。",
         name: null,
         email: null,
+        publish: false,
       },
     });
+  });
+
+  it("公開の同意（チェックボックス）を読み取る", () => {
+    const result = validateFeedback({ ...base, publish: "on" });
+    expect(result.ok && result.value.publish).toBe(true);
   });
 
   it("選択肢にない値・空の本文・長すぎる本文・正しくないメールを拒否する", () => {

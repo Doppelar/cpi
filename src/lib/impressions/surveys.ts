@@ -124,6 +124,8 @@ export type ImpressionInput = {
   answers: Record<string, string[]>;
   age: string | null;
   comment: string | null;
+  /** 自由記入を「みんなの声」に公開してよいか */
+  publish: boolean;
 };
 
 export type ImpressionValidation =
@@ -164,6 +166,7 @@ export function validateImpression(
       answers,
       age: (AGE_OPTIONS as readonly string[]).includes(age) && age !== "答えない" ? age : null,
       comment: comment || null,
+      publish: first("publish") === "on",
     },
   };
 }

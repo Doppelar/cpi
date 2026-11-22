@@ -117,15 +117,7 @@ export function InterviewChat({
       )}
 
       {finished ? (
-        <div className="space-y-2 border-t border-line px-4 py-4 text-sm">
-          <p className="font-semibold">ご協力ありがとうございました。</p>
-          <p className="text-ink-2">
-            いただいたお話は、サイトの改善や、みなさんの実感を知るための参考にします（サイト上には公開しません）。
-          </p>
-          <a href={INTERVIEW_TOPICS[topic].path} className="inline-block text-accent underline">
-            グラフのページにもどる
-          </a>
-        </div>
+        <PublishChoice id={id} topic={topic} saving={busy} />
       ) : (
         <form
           className="space-y-2 border-t border-line px-4 py-3"
@@ -171,6 +163,90 @@ export function InterviewChat({
           </p>
         </form>
       )}
+    </div>
+  );
+}
+
+/** インタビューの最後に、「みんなの声」に公開するかを選んでもらう */
+function PublishChoice({
+  id,
+  topic,
+  saving,
+}: {
+  id: string;
+  topic: InterviewTopic;
+  saving: boolean;
+}) {
+  const [choice, setChoice] = useState<boolean | null>(null);
+  const [sending, setSending] = useState(false);
+  const [problem, setProblem] = useState<string | null>(null);
+
+  const choose = async (publish: boolean) => {
+    setSending(true);
+    setProblem(null);
+    try {
+      // 会話の保存が終わるのを少し待ってから送る（見つからなければもう一度試す）
+      for (let attempt = 0; attempt < 3; attempt++) {
+        const response = await fetch("/api/interview/consent", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ id, publish }),
+        });
+        if (response.ok) {
+          setChoice(publish);
+          return;
+        }
+        if (response.status !== 404) break;
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+      }
+      setProblem("うまく保存できませんでした。もう一度選んでください。");
+    } catch {
+      setProblem("うまく保存できませんでした。もう一度選んでください。");
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <div className="space-y-3 border-t border-line px-4 py-4 text-sm">
+      <p className="font-semibold">ご協力ありがとうございました。</p>
+      {choice === null ? (
+        <>
+          <p className="text-ink-2">
+            このインタビューのやり取りを、「みんなの声」のページで公開してもよいですか？
+            名前などは表示せず、電話番号などの連絡先は自動で伏せ字にします。
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              disabled={sending || saving}
+              onClick={() => void choose(true)}
+              className="rounded-full bg-accent px-5 py-2 font-bold text-white disabled:opacity-50"
+            >
+              公開してよい
+            </button>
+            <button
+              type="button"
+              disabled={sending || saving}
+              onClick={() => void choose(false)}
+              className="rounded-full border border-line bg-card px-5 py-2 font-semibold disabled:opacity-50"
+            >
+              公開しない
+            </button>
+          </div>
+          {problem && <p className="text-up">{problem}</p>}
+        </>
+      ) : (
+        <p className="text-ink-2">
+          {choice
+            ? "「みんなの声」に掲載します（不適切な内容は掲載しないことがあります）。"
+            : "公開しません。いただいたお話は、サイトの改善の参考にだけ使います。"}
+        </p>
+      )}
+      <div className="flex flex-wrap gap-4">
+        <a href="/voices" className="text-accent underline">みんなの声を見る</a>
+        <a href={INTERVIEW_TOPICS[topic].path} className="text-accent underline">グラフのページにもどる</a>
+      </div>
     </div>
   );
 }

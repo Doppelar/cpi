@@ -14,6 +14,8 @@ const SCHEMA = [
     sender_hash TEXT NOT NULL
   )`,
   `CREATE INDEX IF NOT EXISTS interview_sessions_sender_time ON interview_sessions (sender_hash, created_at DESC)`,
+  `ALTER TABLE interview_sessions ADD COLUMN IF NOT EXISTS is_public BOOLEAN NOT NULL DEFAULT false`,
+  `ALTER TABLE interview_sessions ADD COLUMN IF NOT EXISTS is_hidden BOOLEAN NOT NULL DEFAULT false`,
 ];
 
 let schemaReady: Promise<void> | null = null;
@@ -74,13 +76,16 @@ export type InterviewSessionRow = {
   transcript: TranscriptLine[];
   userTurns: number;
   completed: boolean;
+  isPublic: boolean;
+  isHidden: boolean;
 };
 
 /** 管理ページ用：新しい順 */
 export async function listInterviewSessions(limit = 200): Promise<InterviewSessionRow[]> {
   await ensureSchema();
   const rows = await sql()`
-    SELECT id, topic, created_at, transcript, user_turns, completed FROM interview_sessions
+    SELECT id, topic, created_at, transcript, user_turns, completed, is_public, is_hidden
+    FROM interview_sessions
     ORDER BY created_at DESC LIMIT ${limit}`;
   return rows.map((row) => ({
     id: String(row.id),
@@ -89,5 +94,40 @@ export async function listInterviewSessions(limit = 200): Promise<InterviewSessi
     transcript: row.transcript as TranscriptLine[],
     userTurns: Number(row.user_turns),
     completed: Boolean(row.completed),
+    isPublic: Boolean(row.is_public),
+    isHidden: Boolean(row.is_hidden),
   }));
+}
+
+/** 終わったインタビューを公開する／しない（回答した本人がインタビューの最後に選ぶ） */
+export async function setInterviewPublic(id: string, isPublic: boolean): Promise<boolean> {
+  await ensureSchema();
+  const rows = await sql()`
+    UPDATE interview_sessions SET is_public = ${isPublic}, updated_at = NOW()
+    WHERE id = ${id} AND completed RETURNING id`;
+  return rows.length > 0;
+}
+
+/** 「みんなの声」に載せる、公開に同意した AI インタビュー */
+export async function listPublicInterviews(limit = 50): Promise<InterviewSessionRow[]> {
+  await ensureSchema();
+  const rows = await sql()`
+    SELECT id, topic, created_at, transcript, user_turns, completed FROM interview_sessions
+    WHERE is_public AND NOT is_hidden AND completed
+    ORDER BY created_at DESC LIMIT ${limit}`;
+  return rows.map((row) => ({
+    id: String(row.id),
+    topic: String(row.topic),
+    createdAt: new Date(row.created_at).toISOString(),
+    transcript: row.transcript as TranscriptLine[],
+    userTurns: Number(row.user_turns),
+    completed: true,
+    isPublic: true,
+    isHidden: false,
+  }));
+}
+
+export async function setInterviewHidden(id: string, hidden: boolean) {
+  await ensureSchema();
+  await sql()`UPDATE interview_sessions SET is_hidden = ${hidden} WHERE id = ${id}`;
 }

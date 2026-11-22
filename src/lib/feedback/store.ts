@@ -16,6 +16,8 @@ CREATE TABLE IF NOT EXISTS feedback (
   sender_hash TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS feedback_sender_time ON feedback (sender_hash, created_at DESC);
+ALTER TABLE feedback ADD COLUMN IF NOT EXISTS is_public BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE feedback ADD COLUMN IF NOT EXISTS is_hidden BOOLEAN NOT NULL DEFAULT false;
 `;
 
 let schemaReady: Promise<void> | null = null;
@@ -60,8 +62,8 @@ export async function saveFeedback(
 ): Promise<void> {
   await ensureSchema();
   await sql()`
-    INSERT INTO feedback (topic, kind, body, name, email, page, sender_hash)
-    VALUES (${input.topic}, ${input.kind}, ${input.body}, ${input.name}, ${input.email}, ${page}, ${sender})`;
+    INSERT INTO feedback (topic, kind, body, name, email, page, sender_hash, is_public)
+    VALUES (${input.topic}, ${input.kind}, ${input.body}, ${input.name}, ${input.email}, ${page}, ${sender}, ${input.publish})`;
 }
 
 export type FeedbackRow = {
@@ -73,13 +75,15 @@ export type FeedbackRow = {
   name: string | null;
   email: string | null;
   page: string | null;
+  isPublic: boolean;
+  isHidden: boolean;
 };
 
 /** 管理ページ用：新しい順 */
 export async function listFeedback(limit = 500): Promise<FeedbackRow[]> {
   await ensureSchema();
   const rows = await sql()`
-    SELECT id, created_at, topic, kind, body, name, email, page FROM feedback
+    SELECT id, created_at, topic, kind, body, name, email, page, is_public, is_hidden FROM feedback
     ORDER BY created_at DESC LIMIT ${limit}`;
   return rows.map((row) => ({
     id: Number(row.id),
@@ -90,5 +94,29 @@ export async function listFeedback(limit = 500): Promise<FeedbackRow[]> {
     name: row.name == null ? null : String(row.name),
     email: row.email == null ? null : String(row.email),
     page: row.page == null ? null : String(row.page),
+    isPublic: Boolean(row.is_public),
+    isHidden: Boolean(row.is_hidden),
   }));
+}
+
+/** 「みんなの声」に載せるご意見（公開に同意し、非公開にしていないもの） */
+export async function listPublicFeedback(limit = 100) {
+  await ensureSchema();
+  const rows = await sql()`
+    SELECT id, created_at, topic, kind, body FROM feedback
+    WHERE is_public AND NOT is_hidden
+    ORDER BY created_at DESC LIMIT ${limit}`;
+  return rows.map((row) => ({
+    id: Number(row.id),
+    createdAt: new Date(row.created_at).toISOString(),
+    topic: String(row.topic),
+    kind: String(row.kind),
+    body: String(row.body),
+  }));
+}
+
+/** 管理ページから、公開中のご意見を非公開にする（または戻す） */
+export async function setFeedbackHidden(id: number, hidden: boolean) {
+  await ensureSchema();
+  await sql()`UPDATE feedback SET is_hidden = ${hidden} WHERE id = ${id}`;
 }

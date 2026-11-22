@@ -24,6 +24,8 @@ export type FeedbackInput = {
   body: string;
   name: string | null;
   email: string | null;
+  /** 「みんなの声」に公開してよいか（名前・メールは公開しない） */
+  publish: boolean;
 };
 
 export type FeedbackValidation =
@@ -68,6 +70,7 @@ export function validateFeedback(raw: Record<string, unknown>): FeedbackValidati
       body,
       name: name || null,
       email: email || null,
+      publish: raw.publish === "on" || raw.publish === "1",
     },
   };
 }

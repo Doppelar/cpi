@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { formatMonth } from "@/lib/cpi/areas";
+import { toggleHidden } from "./actions";
 import { listFeedback } from "@/lib/feedback/store";
 import { listImpressions } from "@/lib/impressions/store";
 import { listInterviewSessions } from "@/lib/interview/store";
@@ -22,6 +23,38 @@ const dateFormat = new Intl.DateTimeFormat("ja-JP", {
   hour: "2-digit",
   minute: "2-digit",
 });
+
+/** 「みんなの声」への掲載状態と、掲載をとりやめる／戻すボタン */
+function PublishControl({
+  kind,
+  id,
+  isPublic,
+  isHidden,
+}: {
+  kind: "feedback" | "impression" | "interview";
+  id: string | number;
+  isPublic: boolean;
+  isHidden: boolean;
+}) {
+  if (!isPublic) {
+    return <span className="rounded-full bg-surface-2 px-2 py-0.5 text-ink-3">非公開（同意なし）</span>;
+  }
+  return (
+    <form action={toggleHidden} className="inline-flex items-center gap-2">
+      <input type="hidden" name="kind" value={kind} />
+      <input type="hidden" name="id" value={String(id)} />
+      <input type="hidden" name="hidden" value={isHidden ? "0" : "1"} />
+      <span
+        className={`rounded-full px-2 py-0.5 ${isHidden ? "bg-up-soft text-ink" : "bg-[#0ca30c]/15 text-ink"}`}
+      >
+        {isHidden ? "掲載停止中" : "みんなの声に掲載中"}
+      </span>
+      <button type="submit" className="rounded-full border border-line px-2 py-0.5 text-ink-2 hover:text-ink">
+        {isHidden ? "掲載に戻す" : "掲載をとりやめる"}
+      </button>
+    </form>
+  );
+}
 
 /** 届いたご意見の一覧。middleware のパスワードで守る */
 export default async function FeedbackAdminPage() {
@@ -54,6 +87,7 @@ export default async function FeedbackAdminPage() {
                 <span className="tabular">{dateFormat.format(new Date(row.createdAt))}</span>
                 <span className="rounded-full bg-surface-2 px-2 py-0.5 text-ink-2">{row.topic}</span>
                 <span className="rounded-full bg-surface-2 px-2 py-0.5 text-ink-2">{row.kind}</span>
+                <PublishControl kind="feedback" id={row.id} isPublic={row.isPublic} isHidden={row.isHidden} />
                 {row.page && <span>送信元：{row.page}</span>}
               </div>
               <p className="mt-2 whitespace-pre-wrap leading-relaxed">{row.body}</p>
@@ -86,6 +120,7 @@ export default async function FeedbackAdminPage() {
                   {survey?.title ?? row.survey}（{formatMonth(row.ym)}分を見て）
                 </span>
                 {row.age && <span>{row.age}</span>}
+                <PublishControl kind="impression" id={row.id} isPublic={row.isPublic} isHidden={row.isHidden} />
               </div>
               <dl className="mt-2 space-y-0.5 text-sm">
                 {(survey?.questions ?? []).map((question, index) => (
@@ -119,6 +154,9 @@ export default async function FeedbackAdminPage() {
                 </span>
                 <span className="ml-2 text-xs text-ink-3">
                   回答{session.userTurns}回・{session.completed ? "完了" : "途中"}
+                </span>
+                <span className="ml-2 inline-block text-xs">
+                  <PublishControl kind="interview" id={session.id} isPublic={session.isPublic} isHidden={session.isHidden} />
                 </span>
                 <span className="mt-1 block truncate text-sm">
                   {session.transcript.find((line) => line.role === "user")?.text ?? ""}

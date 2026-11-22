@@ -18,6 +18,7 @@ const NAV = [
   { href: "/keiki", label: "景気動向指数" },
   { href: "/about", label: "CPIとは" },
   { href: "/interview", label: "AIインタビュー" },
+  { href: "/voices", label: "みんなの声" },
   { href: "/feedback", label: "ご意見" },
 ];
 

@@ -143,9 +143,17 @@ export function FeedbackForm({
         </div>
       </div>
 
+      <label className="flex items-start gap-2 rounded-lg bg-surface-2 px-3 py-2.5 text-sm">
+            <input type="checkbox" name="publish" defaultChecked className="mt-0.5 h-4 w-4 accent-[var(--accent)]" />
+            <span>
+              このご意見を「みんなの声」のページで公開してよい
+              <span className="block text-xs text-ink-3">お名前・メールアドレスは公開しません。電話番号などの連絡先は自動で伏せ字にします。</span>
+            </span>
+          </label>
+
       <p className="text-xs leading-relaxed text-ink-3">
-        いただいたご意見はサイトの改善のためにだけ使い、サイト上には公開しません。お名前・メールアドレスは、お返事が必要な場合の連絡にだけ使います。
-        病気の相談や、個人を特定できる情報は書かないでください。
+        いただいたご意見はサイトの改善に使います。公開してよいを選んだものは、本文だけを「みんなの声」に掲載します（不適切な内容は掲載しないことがあります）。
+        お名前・メールアドレスは、お返事が必要な場合の連絡にだけ使います。病気の相談や、個人を特定できる情報は書かないでください。
       </p>
 
       <button

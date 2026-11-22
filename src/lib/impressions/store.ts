@@ -20,6 +20,8 @@ const SCHEMA = [
   )`,
   `CREATE INDEX IF NOT EXISTS impressions_survey_time ON impressions (survey, created_at DESC)`,
   `CREATE INDEX IF NOT EXISTS impressions_sender_time ON impressions (sender_hash, created_at DESC)`,
+  `ALTER TABLE impressions ADD COLUMN IF NOT EXISTS is_public BOOLEAN NOT NULL DEFAULT false`,
+  `ALTER TABLE impressions ADD COLUMN IF NOT EXISTS is_hidden BOOLEAN NOT NULL DEFAULT false`,
 ];
 
 let schemaReady: Promise<void> | null = null;
@@ -57,9 +59,9 @@ export async function saveImpression(
 ): Promise<void> {
   await ensureSchema();
   await sql()`
-    INSERT INTO impressions (survey, ym, answers, age, comment, sender_hash)
+    INSERT INTO impressions (survey, ym, answers, age, comment, sender_hash, is_public)
     VALUES (${input.survey}, ${input.ym}, ${JSON.stringify(input.answers)}::jsonb,
-            ${input.age}, ${input.comment}, ${sender})`;
+            ${input.age}, ${input.comment}, ${sender}, ${input.publish && input.comment != null})`;
 }
 
 /** 直近 RESULT_DAYS 日の回答の集計 */
@@ -88,13 +90,15 @@ export type ImpressionRow = {
   answers: Record<string, string[]>;
   age: string | null;
   comment: string | null;
+  isPublic: boolean;
+  isHidden: boolean;
 };
 
 /** 管理ページ用：新しい順 */
 export async function listImpressions(limit = 500): Promise<ImpressionRow[]> {
   await ensureSchema();
   const rows = await sql()`
-    SELECT id, created_at, survey, ym, answers, age, comment FROM impressions
+    SELECT id, created_at, survey, ym, answers, age, comment, is_public, is_hidden FROM impressions
     ORDER BY created_at DESC LIMIT ${limit}`;
   return rows.map((row) => ({
     id: Number(row.id),
@@ -104,5 +108,32 @@ export async function listImpressions(limit = 500): Promise<ImpressionRow[]> {
     answers: row.answers as Record<string, string[]>,
     age: row.age == null ? null : String(row.age),
     comment: row.comment == null ? null : String(row.comment),
+    isPublic: Boolean(row.is_public),
+    isHidden: Boolean(row.is_hidden),
   }));
+}
+
+/** 「みんなの声」に載せる、実感アンケートの自由記入 */
+export async function listPublicImpressions(limit = 100): Promise<ImpressionRow[]> {
+  await ensureSchema();
+  const rows = await sql()`
+    SELECT id, created_at, survey, ym, answers, age, comment FROM impressions
+    WHERE is_public AND NOT is_hidden AND comment IS NOT NULL
+    ORDER BY created_at DESC LIMIT ${limit}`;
+  return rows.map((row) => ({
+    id: Number(row.id),
+    createdAt: new Date(row.created_at).toISOString(),
+    survey: String(row.survey),
+    ym: Number(row.ym),
+    answers: row.answers as Record<string, string[]>,
+    age: row.age == null ? null : String(row.age),
+    comment: String(row.comment),
+    isPublic: true,
+    isHidden: false,
+  }));
+}
+
+export async function setImpressionHidden(id: number, hidden: boolean) {
+  await ensureSchema();
+  await sql()`UPDATE impressions SET is_hidden = ${hidden} WHERE id = ${id}`;
 }
