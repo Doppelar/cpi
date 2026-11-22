@@ -6,7 +6,9 @@ import { listPublicFeedback } from "@/lib/feedback/store";
 import { listPublicImpressions } from "@/lib/impressions/store";
 import { isSurveyId, SURVEYS } from "@/lib/impressions/surveys";
 import { listPublicInterviews } from "@/lib/interview/store";
-import { INTERVIEW_TOPICS, isInterviewTopic } from "@/lib/interview/topics";
+import { getInterviewDigest } from "@/lib/interview/summarize";
+import { DIGEST_MIN_INTERVIEWS } from "@/lib/interview/summary";
+import { INTERVIEW_TOPICS, type InterviewTopic, isInterviewTopic } from "@/lib/interview/topics";
 import {
   feedbackTopicId,
   pairQuestionsAndAnswers,
@@ -57,6 +59,26 @@ function logEmpty(label: string) {
   };
 }
 
+/** AI インタビューの質問と回答 */
+function QAList({
+  id,
+  transcript,
+}: {
+  id: string;
+  transcript: Parameters<typeof pairQuestionsAndAnswers>[0];
+}) {
+  return (
+    <dl className="mt-3 space-y-3">
+      {pairQuestionsAndAnswers(transcript).map((pair, i) => (
+        <div key={`${id}-${i}`}>
+          <dt className="text-sm text-ink-3">Q. {pair.question}</dt>
+          <dd className="mt-0.5 whitespace-pre-wrap leading-relaxed">{pair.answer}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
 function Badge({ children }: { children: React.ReactNode }) {
   return (
     <span className="rounded-full bg-surface-2 px-2 py-0.5 text-xs text-ink-2">{children}</span>
@@ -100,14 +122,24 @@ export default async function VoicesPage({
               {isInterviewTopic(session.topic) ? INTERVIEW_TOPICS[session.topic].short : session.topic}
             </Badge>
           </div>
-          <dl className="mt-3 space-y-3">
-            {pairQuestionsAndAnswers(session.transcript).map((pair, i) => (
-              <div key={`${session.id}-${i}`}>
-                <dt className="text-sm text-ink-3">Q. {pair.question}</dt>
-                <dd className="mt-0.5 whitespace-pre-wrap leading-relaxed">{pair.answer}</dd>
-              </div>
-            ))}
-          </dl>
+          {session.summary && session.summary.length > 0 ? (
+            <>
+              <ul className="mt-3 space-y-1.5">
+                {session.summary.map((line, i) => (
+                  <li key={`${session.id}-s-${i}`} className="flex gap-2 leading-relaxed">
+                    <span aria-hidden className="text-accent">●</span>
+                    <span>{line}</span>
+                  </li>
+                ))}
+              </ul>
+              <details className="mt-3 text-sm">
+                <summary className="cursor-pointer text-ink-2 hover:text-ink">やり取りを見る</summary>
+                <QAList id={session.id} transcript={session.transcript} />
+              </details>
+            </>
+          ) : (
+            <QAList id={session.id} transcript={session.transcript} />
+          )}
         </>
       ),
     })),
@@ -157,6 +189,23 @@ export default async function VoicesPage({
     })),
   ].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 
+  const digestTopics = (Object.keys(INTERVIEW_TOPICS) as InterviewTopic[]).filter(
+    (id) => topic === "all" || topic === id
+  );
+  const digests = await Promise.all(
+    digestTopics.map(async (id) => {
+      const summaries = interviews
+        .filter((session) => session.topic === id && session.summary && session.summary.length > 0)
+        .map((session) => session.summary as string[]);
+      return {
+        id,
+        count: interviews.filter((session) => session.topic === id).length,
+        bullets: await getInterviewDigest(id, summaries),
+      };
+    })
+  );
+  const showDigests = type === "all" || type === "interviews";
+
   const counts = {
     interviews: interviews.length,
     impressions: impressions.length,
@@ -184,6 +233,48 @@ export default async function VoicesPage({
           上のボタンで、種類（AIインタビューなど）や、どの指数についての声かをしぼり込めます。
         </p>
       </EasyNote>
+
+      {showDigests && (
+        <section className="space-y-3">
+          <h2 className="text-xl font-bold">AIインタビューのまとめ</h2>
+          <p className="text-sm text-ink-2">
+            公開に同意いただいたAIインタビューを、AIがテーマごとに要約したものです（{DIGEST_MIN_INTERVIEWS}件以上集まると表示します）。
+          </p>
+          <div className="grid gap-3 md:grid-cols-3">
+            {digests.map((digest) => (
+              <div key={digest.id} className="rounded-2xl border border-line bg-card p-4">
+                <p className="font-bold">{INTERVIEW_TOPICS[digest.id].short}</p>
+                <p className="text-xs text-ink-3">{digest.count}件のインタビューから</p>
+                {digest.bullets ? (
+                  <ul className="mt-2 space-y-1.5 text-sm leading-relaxed">
+                    {digest.bullets.map((line, i) => (
+                      <li key={`${digest.id}-${i}`} className="flex gap-2">
+                        <span aria-hidden className="text-accent">●</span>
+                        <span>{line}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="mt-2 text-sm text-ink-3">
+                    {digest.count < DIGEST_MIN_INTERVIEWS
+                      ? `あと${DIGEST_MIN_INTERVIEWS - digest.count}件集まると、まとめを表示します。`
+                      : "まとめを作成中です。しばらくしてからご覧ください。"}
+                  </p>
+                )}
+                <Link
+                  href={`/interview?topic=${digest.id}`}
+                  className="mt-3 inline-block text-sm text-accent underline"
+                >
+                  このテーマのAIインタビューに答える
+                </Link>
+              </div>
+            ))}
+          </div>
+          <p className="text-xs text-ink-3">
+            まとめはAIが作成したもので、内容に誤りが含まれることがあります。個々の声は下の一覧でご覧ください。
+          </p>
+        </section>
+      )}
 
       <div className="space-y-2">
         <div className="flex flex-wrap gap-2">

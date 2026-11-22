@@ -2,6 +2,7 @@ import { convertToModelMessages, streamText, type UIMessage } from "ai";
 import { type NextRequest, NextResponse } from "next/server";
 import { senderHash } from "@/lib/feedback/store";
 import { getInterviewContext } from "@/lib/interview/context";
+import { GATEWAY_OPTIONS, INTERVIEW_MODEL } from "@/lib/interview/models";
 import { canContinue, saveTranscript } from "@/lib/interview/store";
 import {
   buildInstructions,
@@ -12,13 +13,6 @@ import {
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
-/**
- * 使う AI（Vercel AI Gateway 経由。混雑・障害のときは次のモデルに切り替える）。
- * AI Gateway の無料枠で使えて、考える時間（推論）なしにすぐ返すモデルを選ぶ。
- * 有料クレジットにすれば、より高性能なモデル（Claude Haiku など）も使える。
- */
-const MODEL = "google/gemini-2.5-flash-lite";
-const FALLBACK_MODELS = ["openai/gpt-4.1-mini", "openai/gpt-4o-mini"];
 
 export async function POST(request: NextRequest) {
   let body: { id?: unknown; topic?: unknown; messages?: unknown };
@@ -52,11 +46,11 @@ export async function POST(request: NextRequest) {
 
   const context = await getInterviewContext(topic);
   const result = streamText({
-    model: MODEL,
+    model: INTERVIEW_MODEL,
     system: buildInstructions(topic, context.data, check.userTurns),
     messages: await convertToModelMessages(messages),
     maxOutputTokens: 500,
-    providerOptions: { gateway: { models: FALLBACK_MODELS } },
+    providerOptions: GATEWAY_OPTIONS,
   });
 
   return result.toUIMessageStreamResponse({

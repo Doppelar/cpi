@@ -1,4 +1,6 @@
+import { revalidateTag } from "next/cache";
 import { type NextRequest, NextResponse } from "next/server";
+import { ensureInterviewSummary, VOICES_CACHE_TAG } from "@/lib/interview/summarize";
 import { setInterviewPublic } from "@/lib/interview/store";
 
 /** インタビューを終えた本人が、「みんなの声」に公開するかを選ぶ */
@@ -20,5 +22,16 @@ export async function POST(request: NextRequest) {
       { status: 404 }
     );
   }
+  if (body.publish) {
+    // 公開するときは、その場で要約を作る（失敗しても公開はする。要約がなければやり取りを表示）
+    try {
+      await ensureInterviewSummary(id);
+    } catch (error) {
+      console.error("インタビューの要約に失敗しました", error);
+    }
+  }
+  revalidateTag(VOICES_CACHE_TAG);
   return NextResponse.json({ ok: true, publish: body.publish });
 }
+
+export const maxDuration = 60;

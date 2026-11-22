@@ -16,6 +16,7 @@ const SCHEMA = [
   `CREATE INDEX IF NOT EXISTS interview_sessions_sender_time ON interview_sessions (sender_hash, created_at DESC)`,
   `ALTER TABLE interview_sessions ADD COLUMN IF NOT EXISTS is_public BOOLEAN NOT NULL DEFAULT false`,
   `ALTER TABLE interview_sessions ADD COLUMN IF NOT EXISTS is_hidden BOOLEAN NOT NULL DEFAULT false`,
+  `ALTER TABLE interview_sessions ADD COLUMN IF NOT EXISTS summary JSONB`,
 ];
 
 const ensureSchema = schemaOnce(SCHEMA);
@@ -68,13 +69,15 @@ export type InterviewSessionRow = {
   completed: boolean;
   isPublic: boolean;
   isHidden: boolean;
+  /** 公開用の要約（箇条書き）。まだなければ null */
+  summary: string[] | null;
 };
 
 /** 管理ページ用：新しい順 */
 export async function listInterviewSessions(limit = 200): Promise<InterviewSessionRow[]> {
   await ensureSchema();
   const rows = await sql()`
-    SELECT id, topic, created_at, transcript, user_turns, completed, is_public, is_hidden
+    SELECT id, topic, created_at, transcript, user_turns, completed, is_public, is_hidden, summary
     FROM interview_sessions
     ORDER BY created_at DESC LIMIT ${limit}`;
   return rows.map((row) => ({
@@ -86,7 +89,27 @@ export async function listInterviewSessions(limit = 200): Promise<InterviewSessi
     completed: Boolean(row.completed),
     isPublic: Boolean(row.is_public),
     isHidden: Boolean(row.is_hidden),
+    summary: (row.summary as string[] | null) ?? null,
   }));
+}
+
+/** 要約を作るためのインタビュー（終わったものだけ） */
+export async function getCompletedInterview(id: string) {
+  await ensureSchema();
+  const rows = await sql()`
+    SELECT topic, transcript, summary FROM interview_sessions WHERE id = ${id} AND completed`;
+  const row = rows[0];
+  if (!row) return null;
+  return {
+    topic: String(row.topic),
+    transcript: row.transcript as TranscriptLine[],
+    summary: (row.summary as string[] | null) ?? null,
+  };
+}
+
+export async function saveInterviewSummary(id: string, summary: readonly string[]) {
+  await ensureSchema();
+  await sql()`UPDATE interview_sessions SET summary = ${JSON.stringify(summary)}::jsonb WHERE id = ${id}`;
 }
 
 /** 終わったインタビューを公開する／しない（回答した本人がインタビューの最後に選ぶ） */
@@ -101,7 +124,7 @@ export async function setInterviewPublic(id: string, isPublic: boolean): Promise
 /** 「みんなの声」に載せる、公開に同意した AI インタビュー */
 export async function listPublicInterviews(limit = 50): Promise<InterviewSessionRow[]> {
   const rows = await sql()`
-    SELECT id, topic, created_at, transcript, user_turns, completed FROM interview_sessions
+    SELECT id, topic, created_at, transcript, user_turns, completed, summary FROM interview_sessions
     WHERE is_public AND NOT is_hidden AND completed
     ORDER BY created_at DESC LIMIT ${limit}`;
   return rows.map((row) => ({
@@ -113,6 +136,7 @@ export async function listPublicInterviews(limit = 50): Promise<InterviewSession
     completed: true,
     isPublic: true,
     isHidden: false,
+    summary: (row.summary as string[] | null) ?? null,
   }));
 }
 

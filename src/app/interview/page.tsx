@@ -55,7 +55,7 @@ export default async function InterviewPage({
           ))}
         </ul>
         <p className="text-xs text-ink-3">
-          お話の内容はサイトの改善や、みなさんの実感を知るための参考にします。インタビューの最後に「公開してよい」を選んだものだけ、「みんなの声」に掲載します。AIの応答には Vercel AI Gateway 経由の AI モデルを使います。
+          お話の内容はサイトの改善や、みなさんの実感を知るための参考にします。インタビューの最後に「公開してよい」を選んだものだけ、AIが要約して「みんなの声」に掲載します。AIの応答には Vercel AI Gateway 経由の AI モデルを使います。
         </p>
       </div>
     );
@@ -72,7 +72,7 @@ export default async function InterviewPage({
       </header>
       <InterviewChat topic={topic} opening={openingMessage(topic, context.headline)} />
       <p className="text-xs text-ink-3">
-        お話の内容はサイトの改善や、みなさんの実感を知るための参考にします。インタビューの最後に「公開してよい」を選んだものだけ、「みんなの声」に掲載します。AIの説明はまちがうこともあるため、正確な数字はグラフのページでご確認ください。
+        お話の内容はサイトの改善や、みなさんの実感を知るための参考にします。インタビューの最後に「公開してよい」を選んだものだけ、AIが要約して「みんなの声」に掲載します。AIの説明はまちがうこともあるため、正確な数字はグラフのページでご確認ください。
       </p>
     </div>
   );
