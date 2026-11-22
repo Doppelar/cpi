@@ -11,14 +11,6 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-/** 管理ページで質問を短く表す名前 */
-const ADMIN_LABELS: Record<string, string> = {
-  feel: "実感",
-  life: "暮らし向き",
-  items: "値上がりを感じるもの",
-  outlook: "半年後の見通し",
-  reasons: "理由",
-};
 
 const dateFormat = new Intl.DateTimeFormat("ja-JP", {
   timeZone: "Asia/Tokyo",
@@ -92,7 +84,7 @@ export default async function FeedbackAdminPage() {
                 {(survey?.questions ?? []).map((question, index) => (
                   <div key={question.id} className="flex flex-wrap gap-x-2">
                     <dt className="text-ink-3" title={question.label}>
-                      Q{index + 1}（{ADMIN_LABELS[question.id] ?? question.id}）：
+                      Q{index + 1}（{question.short}）：
                     </dt>
                     <dd>{(row.answers[question.id] ?? []).join("、") || "—"}</dd>
                   </div>

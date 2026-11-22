@@ -6,6 +6,8 @@ export type SurveyId = "cpi-national" | "cpi-tokyo" | "keiki";
 
 export type Question = {
   id: string;
+  /** 短い名前（注意や管理ページで使う） */
+  short: string;
   /** {value} は画面で指数の値に置き換える */
   label: string;
   multiple: boolean;
@@ -15,6 +17,7 @@ export type Question = {
 const CPI_QUESTIONS: readonly Question[] = [
   {
     id: "feel",
+    short: "あなたが感じる値上がり",
     label: "指数では、物価は1年前より{value}。あなたが感じる値上がりは？",
     multiple: false,
     options: [
@@ -26,12 +29,14 @@ const CPI_QUESTIONS: readonly Question[] = [
   },
   {
     id: "life",
+    short: "暮らし向き",
     label: "1年前と比べて、暮らし向きはどうですか？",
     multiple: false,
     options: ["苦しくなった", "やや苦しくなった", "変わらない", "やや楽になった", "楽になった"],
   },
   {
     id: "items",
+    short: "値上がりを感じるもの",
     label: "特に値上がりを感じるものは？（いくつでも）",
     multiple: true,
     options: [
@@ -53,6 +58,7 @@ const CPI_QUESTIONS: readonly Question[] = [
 const KEIKI_QUESTIONS: readonly Question[] = [
   {
     id: "feel",
+    short: "あなたが感じる景気",
     label: "国の判断は「{value}」。あなたが感じる景気は？",
     multiple: false,
     options: [
@@ -65,12 +71,14 @@ const KEIKI_QUESTIONS: readonly Question[] = [
   },
   {
     id: "outlook",
+    short: "半年後の見通し",
     label: "半年後の景気は、どうなると思いますか？",
     multiple: false,
     options: ["よくなる", "変わらない", "悪くなる", "わからない"],
   },
   {
     id: "reasons",
+    short: "そう感じる理由",
     label: "そう感じる理由は？（いくつでも）",
     multiple: true,
     options: [
@@ -133,12 +141,12 @@ export function validateImpression(
   if (!/^\d{6}$/.test(String(ym))) return { ok: false, message: "年月が正しくありません。" };
 
   const answers: Record<string, string[]> = {};
-  for (const question of SURVEYS[survey].questions) {
+  for (const [index, question] of SURVEYS[survey].questions.entries()) {
     const chosen = [...new Set(fields[`q_${question.id}`] ?? [])].filter((value) =>
       question.options.includes(value)
     );
     if (chosen.length === 0) {
-      return { ok: false, message: `「${question.label.replace(/\{value\}/, "…")}」を選んでください。` };
+      return { ok: false, message: `Q${index + 1}（${question.short}）を選んでください。` };
     }
     answers[question.id] = question.multiple ? chosen : chosen.slice(0, 1);
   }
