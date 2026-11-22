@@ -1,6 +1,6 @@
 import "server-only";
 import { createHash } from "node:crypto";
-import { sql } from "@/lib/db";
+import { schemaOnce, sql } from "@/lib/db";
 import type { FeedbackInput } from "./validate";
 
 const SCHEMA = `
@@ -20,19 +20,11 @@ ALTER TABLE feedback ADD COLUMN IF NOT EXISTS is_public BOOLEAN NOT NULL DEFAULT
 ALTER TABLE feedback ADD COLUMN IF NOT EXISTS is_hidden BOOLEAN NOT NULL DEFAULT false;
 `;
 
-let schemaReady: Promise<void> | null = null;
-function ensureSchema() {
-  schemaReady ??= (async () => {
-    const db = sql();
-    for (const statement of SCHEMA.split(";").map((s) => s.trim()).filter(Boolean)) {
-      await db.query(statement);
-    }
-  })().catch((error) => {
-    schemaReady = null;
-    throw error;
-  });
-  return schemaReady;
-}
+const ensureSchema = schemaOnce(
+  SCHEMA.split(";")
+    .map((s) => s.trim())
+    .filter(Boolean)
+);
 
 /** 送信元を特定できないようにした識別子（連続投稿の制限だけに使う） */
 export function senderHash(ip: string): string {
@@ -101,7 +93,6 @@ export async function listFeedback(limit = 500): Promise<FeedbackRow[]> {
 
 /** 「みんなの声」に載せるご意見（公開に同意し、非公開にしていないもの） */
 export async function listPublicFeedback(limit = 100) {
-  await ensureSchema();
   const rows = await sql()`
     SELECT id, created_at, topic, kind, body FROM feedback
     WHERE is_public AND NOT is_hidden

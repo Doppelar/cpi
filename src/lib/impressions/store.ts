@@ -1,5 +1,5 @@
 import "server-only";
-import { sql } from "@/lib/db";
+import { schemaOnce, sql } from "@/lib/db";
 import {
   aggregateAnswers,
   type ImpressionInput,
@@ -24,17 +24,7 @@ const SCHEMA = [
   `ALTER TABLE impressions ADD COLUMN IF NOT EXISTS is_hidden BOOLEAN NOT NULL DEFAULT false`,
 ];
 
-let schemaReady: Promise<void> | null = null;
-function ensureSchema() {
-  schemaReady ??= (async () => {
-    const db = sql();
-    for (const statement of SCHEMA) await db.query(statement);
-  })().catch((error) => {
-    schemaReady = null;
-    throw error;
-  });
-  return schemaReady;
-}
+const ensureSchema = schemaOnce(SCHEMA);
 
 /** 集計する期間（日） */
 export const RESULT_DAYS = 90;
@@ -67,7 +57,6 @@ export async function saveImpression(
 /** 直近 RESULT_DAYS 日の回答の集計 */
 export async function getSurveyResult(survey: SurveyId): Promise<SurveyResult> {
   try {
-    await ensureSchema();
     const rows = await sql()`
       SELECT answers FROM impressions
       WHERE survey = ${survey}
@@ -115,7 +104,6 @@ export async function listImpressions(limit = 500): Promise<ImpressionRow[]> {
 
 /** 「みんなの声」に載せる、実感アンケートの自由記入 */
 export async function listPublicImpressions(limit = 100): Promise<ImpressionRow[]> {
-  await ensureSchema();
   const rows = await sql()`
     SELECT id, created_at, survey, ym, answers, age, comment FROM impressions
     WHERE is_public AND NOT is_hidden AND comment IS NOT NULL

@@ -49,6 +49,14 @@ type Entry = {
   node: React.ReactNode;
 };
 
+/** 読み込みに失敗したら記録に残し、その種類は0件として表示する */
+function logEmpty(label: string) {
+  return (error: unknown) => {
+    console.error(`みんなの声：${label}の読み込みに失敗しました`, error);
+    return [];
+  };
+}
+
 function Badge({ children }: { children: React.ReactNode }) {
   return (
     <span className="rounded-full bg-surface-2 px-2 py-0.5 text-xs text-ink-2">{children}</span>
@@ -73,9 +81,9 @@ export default async function VoicesPage({
   const topic = parseVoiceTopic(params.topic);
 
   const [feedback, impressions, interviews] = await Promise.all([
-    listPublicFeedback().catch(() => []),
-    listPublicImpressions().catch(() => []),
-    listPublicInterviews().catch(() => []),
+    listPublicFeedback().catch(logEmpty("ご意見")),
+    listPublicImpressions().catch(logEmpty("実感の声")),
+    listPublicInterviews().catch(logEmpty("AIインタビュー")),
   ]);
 
   const entries: Entry[] = [

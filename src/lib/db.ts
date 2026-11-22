@@ -45,3 +45,30 @@ CREATE TABLE IF NOT EXISTS cpi_imports (
   imported_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 `;
+
+/**
+ * 表の準備（CREATE / ALTER ... IF NOT EXISTS）をサーバーごとに1回だけ行う。
+ * 複数のサーバーが同時に準備したときの「すでにある」エラーは無視する。
+ */
+export function schemaOnce(statements: readonly string[]): () => Promise<void> {
+  let ready: Promise<void> | null = null;
+  return () => {
+    ready ??= (async () => {
+      const db = sql();
+      for (const statement of statements) {
+        try {
+          await db.query(statement);
+        } catch (error) {
+          const message = String(error);
+          if (!/already exists|duplicate key|tuple concurrently updated/i.test(message)) {
+            throw error;
+          }
+        }
+      }
+    })().catch((error) => {
+      ready = null;
+      throw error;
+    });
+    return ready;
+  };
+}

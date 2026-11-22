@@ -1,5 +1,5 @@
 import "server-only";
-import { sql } from "@/lib/db";
+import { schemaOnce, sql } from "@/lib/db";
 import { type ChatMessageLike, isClosingMessage, messageText } from "./topics";
 
 const SCHEMA = [
@@ -18,17 +18,7 @@ const SCHEMA = [
   `ALTER TABLE interview_sessions ADD COLUMN IF NOT EXISTS is_hidden BOOLEAN NOT NULL DEFAULT false`,
 ];
 
-let schemaReady: Promise<void> | null = null;
-function ensureSchema() {
-  schemaReady ??= (async () => {
-    const db = sql();
-    for (const statement of SCHEMA) await db.query(statement);
-  })().catch((error) => {
-    schemaReady = null;
-    throw error;
-  });
-  return schemaReady;
-}
+const ensureSchema = schemaOnce(SCHEMA);
 
 /** 同じ送信元が1日に始められるインタビューの数 */
 const DAILY_SESSIONS = 20;
@@ -110,7 +100,6 @@ export async function setInterviewPublic(id: string, isPublic: boolean): Promise
 
 /** 「みんなの声」に載せる、公開に同意した AI インタビュー */
 export async function listPublicInterviews(limit = 50): Promise<InterviewSessionRow[]> {
-  await ensureSchema();
   const rows = await sql()`
     SELECT id, topic, created_at, transcript, user_turns, completed FROM interview_sessions
     WHERE is_public AND NOT is_hidden AND completed
