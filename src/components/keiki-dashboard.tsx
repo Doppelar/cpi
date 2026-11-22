@@ -60,6 +60,8 @@ export async function KeikiDashboard({ requestedYm }: { requestedYm?: string }) 
           <p className="text-sm text-ink-3">最新：{formatMonth(latest.ym)}分（速報・改訂を反映）</p>
         </div>
 
+        <KeikiIntroNote label={latestJudgment?.label ?? null} />
+
         <div className="grid gap-4 lg:grid-cols-[1.1fr_1fr]">
           <div className="rounded-2xl border border-line bg-card p-6">
             <p className="text-sm text-ink-2">
@@ -118,7 +120,6 @@ export async function KeikiDashboard({ requestedYm }: { requestedYm?: string }) 
             </div>
           </div>
         </div>
-        <KeikiIntroNote label={latestJudgment?.label ?? null} />
         <p className="text-sm text-ink-2">
           景気動向指数は、生産・雇用・消費などの経済指標をまとめて、景気がよくなっているか・悪くなっているかを1つの数字で示すものです。
           <a href="#about" className="text-accent underline">

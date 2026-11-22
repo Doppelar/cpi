@@ -106,6 +106,13 @@ export async function AreaDashboard({
           <p className="text-sm text-ink-3">最新：{formatMonth(latest)}分</p>
         </div>
 
+        <CpiIntroNote
+          areaLabel={info.label}
+          monthLabel={formatMonth(latest)}
+          yoy={formatSigned(total?.yoy ?? null)}
+          yen={yen}
+        />
+
         <div className="grid gap-4 lg:grid-cols-[1.1fr_1fr]">
           <div className="rounded-2xl border border-line bg-card p-6">
             <p className="text-sm text-ink-2">
@@ -165,12 +172,6 @@ export async function AreaDashboard({
             ))}
           </div>
         </div>
-        <CpiIntroNote
-          areaLabel={info.label}
-          monthLabel={formatMonth(latest)}
-          yoy={formatSigned(total?.yoy ?? null)}
-          yen={yen}
-        />
         <p className="text-sm text-ink-2">
           消費者物価指数は、家計が買うモノやサービスの値段の動きを、まとめて1つの数字にしたものです。
           <Link href="/about" className="text-accent underline">

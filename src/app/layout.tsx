@@ -32,16 +32,17 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen bg-surface font-sans text-ink">
         <header className="border-b border-line bg-card">
-          <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3">
+          <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3">
             <Link href="/" className="leading-tight">
               <span className="block text-lg font-bold">物価のものさし</span>
               <span className="block text-xs text-ink-3">
                 物価と景気をわかりやすく
               </span>
             </Link>
-            <div className="flex flex-col items-end gap-2">
+            <div className="sm:order-last">
               <ModeToggle />
-            <nav className="flex flex-wrap justify-end gap-1 text-sm">
+            </div>
+            <nav className="-mx-2 flex w-full flex-wrap gap-1 text-sm sm:mx-0 sm:ml-auto sm:w-auto">
               {NAV.map((item) => (
                 <Link
                   key={item.href}
@@ -52,7 +53,6 @@ export default function RootLayout({
                 </Link>
               ))}
             </nav>
-            </div>
           </div>
         </header>
         <main className="mx-auto max-w-6xl px-4 pb-16 pt-6">{children}</main>
