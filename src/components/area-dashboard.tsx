@@ -13,6 +13,7 @@ import {
   getWatchSeries,
 } from "@/lib/cpi/queries";
 import { HEADLINE_CODES, type HeadlinePoint, WATCH_NAMES } from "@/lib/cpi/types";
+import { CpiIntroNote } from "./easy-notes";
 import { MonthExplorer } from "./month-explorer";
 import { TrendCharts } from "./trend-charts";
 import { WatchGrid } from "./watch-grid";
@@ -164,6 +165,12 @@ export async function AreaDashboard({
             ))}
           </div>
         </div>
+        <CpiIntroNote
+          areaLabel={info.label}
+          monthLabel={formatMonth(latest)}
+          yoy={formatSigned(total?.yoy ?? null)}
+          yen={yen}
+        />
         <p className="text-sm text-ink-2">
           消費者物価指数は、家計が買うモノやサービスの値段の動きを、まとめて1つの数字にしたものです。
           <Link href="/about" className="text-accent underline">

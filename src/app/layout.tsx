@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { MODE_INIT_SCRIPT, ModeToggle } from "@/components/explain-mode";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -24,7 +25,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ja">
+    <html lang="ja" suppressHydrationWarning>
+      <head>
+        {/* 覚えている「詳しくない方向け」の表示を、画面が出る前に反映する */}
+        <script dangerouslySetInnerHTML={{ __html: MODE_INIT_SCRIPT }} />
+      </head>
       <body className="min-h-screen bg-surface font-sans text-ink">
         <header className="border-b border-line bg-card">
           <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3">
@@ -34,7 +39,9 @@ export default function RootLayout({
                 物価と景気をわかりやすく
               </span>
             </Link>
-            <nav className="flex gap-1 text-sm">
+            <div className="flex flex-col items-end gap-2">
+              <ModeToggle />
+            <nav className="flex flex-wrap justify-end gap-1 text-sm">
               {NAV.map((item) => (
                 <Link
                   key={item.href}
@@ -45,6 +52,7 @@ export default function RootLayout({
                 </Link>
               ))}
             </nav>
+            </div>
           </div>
         </header>
         <main className="mx-auto max-w-6xl px-4 pb-16 pt-6">{children}</main>

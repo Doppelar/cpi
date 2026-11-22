@@ -8,6 +8,7 @@ import {
   getKeikiMonthly,
 } from "@/lib/keiki/queries";
 import { DI_PAGE_URL } from "@/lib/keiki/source";
+import { KeikiIntroNote } from "./easy-notes";
 import { JudgmentBadge } from "./judgment-badge";
 import { KeikiCharts } from "./keiki-charts";
 import { KeikiMonthExplorer } from "./keiki-month-explorer";
@@ -117,6 +118,7 @@ export async function KeikiDashboard({ requestedYm }: { requestedYm?: string }) 
             </div>
           </div>
         </div>
+        <KeikiIntroNote label={latestJudgment?.label ?? null} />
         <p className="text-sm text-ink-2">
           景気動向指数は、生産・雇用・消費などの経済指標をまとめて、景気がよくなっているか・悪くなっているかを1つの数字で示すものです。
           <a href="#about" className="text-accent underline">

@@ -23,6 +23,7 @@ import {
 } from "@/lib/cpi/chart-data";
 import { CONTRIB_GROUPS } from "@/lib/cpi/types";
 import { LegendChip, RangeToggle, TooltipBox } from "./chart-parts";
+import { CpiContribNote, CpiTrendNote } from "./easy-notes";
 
 const HEADLINE_SERIES = [
   { key: "total", label: "総合", color: "var(--s1)", width: 3 },
@@ -130,6 +131,9 @@ export function TrendCharts({
           </>
         }
       >
+        <div className="mb-4">
+          <CpiTrendNote />
+        </div>
         <div className="mb-3 flex flex-wrap gap-x-4 gap-y-1">
           {HEADLINE_SERIES.map((series) => (
             <LegendChip
@@ -227,6 +231,9 @@ export function TrendCharts({
           </>
         }
       >
+        <div className="mb-4">
+          <CpiContribNote />
+        </div>
         <div className="mb-3 flex flex-wrap gap-x-4 gap-y-1">
           <LegendChip color="var(--text-primary)" label="総合" />
           {CONTRIB_GROUPS.map((group) => (

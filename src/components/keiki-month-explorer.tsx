@@ -7,6 +7,7 @@ import { formatSigned } from "@/lib/cpi/chart-data";
 import type { CiRow } from "@/lib/keiki/chart-data";
 import { SERIES_LABELS, type SeriesId, TREND_CODE } from "@/lib/keiki/parse";
 import type { KeikiComponent, KeikiJudgment } from "@/lib/keiki/types";
+import { KeikiMonthNote } from "./easy-notes";
 import { JudgmentBadge } from "./judgment-badge";
 
 const SERIES: { id: SeriesId; note: string }[] = [
@@ -151,6 +152,8 @@ export function KeikiMonthExplorer({
           景気動向指数は、生産・雇用・消費・株価など約30の指標を合成して作られます。その月にどの指標が指数を押し上げ・押し下げたかを、寄与度（ポイント）で並べます。
         </p>
       </div>
+
+      <KeikiMonthNote />
 
       <div className="flex flex-wrap items-center gap-2">
         <button

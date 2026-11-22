@@ -3,6 +3,7 @@ import Link from "next/link";
 import { formatMonth } from "@/lib/cpi/areas";
 import { formatSigned } from "@/lib/cpi/chart-data";
 import { getMonthItems, getMonths } from "@/lib/cpi/queries";
+import { EasyNote } from "@/components/explain-mode";
 
 export const metadata: Metadata = {
   title: "消費者物価指数（CPI）とは",
@@ -115,6 +116,72 @@ export default function AboutPage() {
           </ol>
         </nav>
       </header>
+
+      <EasyNote title="3分でわかる消費者物価指数">
+        <p>
+          ある家族が、毎月この3つを買っているとします。去年は全部で<strong>1,000円</strong>でした。
+        </p>
+        <div className="overflow-x-auto">
+          <table className="tabular w-full min-w-[22rem] text-sm">
+            <thead>
+              <tr className="border-b border-line text-left text-ink-3">
+                <th className="py-1.5 pr-2 font-medium">買うもの</th>
+                <th className="py-1.5 pr-2 text-right font-medium">去年</th>
+                <th className="py-1.5 pr-2 text-right font-medium">今年</th>
+                <th className="py-1.5 pr-2 text-right font-medium">値上がり率</th>
+                <th className="py-1.5 text-right font-medium">寄与度</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-b border-line">
+                <td className="py-1.5 pr-2">パン</td>
+                <td className="py-1.5 pr-2 text-right">200円</td>
+                <td className="py-1.5 pr-2 text-right">220円</td>
+                <td className="py-1.5 pr-2 text-right text-up">+10%</td>
+                <td className="py-1.5 text-right">+2.0pt</td>
+              </tr>
+              <tr className="border-b border-line">
+                <td className="py-1.5 pr-2">牛乳</td>
+                <td className="py-1.5 pr-2 text-right">200円</td>
+                <td className="py-1.5 pr-2 text-right">200円</td>
+                <td className="py-1.5 pr-2 text-right">0%</td>
+                <td className="py-1.5 text-right">0.0pt</td>
+              </tr>
+              <tr className="border-b border-line">
+                <td className="py-1.5 pr-2">電気代</td>
+                <td className="py-1.5 pr-2 text-right">600円</td>
+                <td className="py-1.5 pr-2 text-right">630円</td>
+                <td className="py-1.5 pr-2 text-right text-up">+5%</td>
+                <td className="py-1.5 text-right">+3.0pt</td>
+              </tr>
+              <tr className="font-bold">
+                <td className="py-1.5 pr-2">合計</td>
+                <td className="py-1.5 pr-2 text-right">1,000円</td>
+                <td className="py-1.5 pr-2 text-right">1,050円</td>
+                <td className="py-1.5 pr-2 text-right text-up">+5%</td>
+                <td className="py-1.5 text-right">+5.0pt</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p>
+          かご全体は1,000円から1,050円になったので、<strong>物価は5%上がった</strong>ことになります。これが消費者物価指数の考え方です。
+          実際には、日本中の家庭がよく買う<strong>約580種類</strong>のもので同じ計算をしています。
+        </p>
+        <p>
+          パンは10%も上がったのに、全体への影響（寄与度）は2ポイントです。電気代は5%しか上がっていないのに3ポイントです。
+          これは、電気代のほうが<strong>使っているお金が多い</strong>からです。このように「どれだけお金を使っているか」を
+          <strong>ウエイト</strong>と呼び、ウエイトが大きいものほど物価全体に強く効きます。
+        </p>
+        <p>
+          <strong>なぜ物価は上がるの？</strong>　原料や石油が高くなる、円安で輸入品が高くなる、働く人の給料が上がって店の費用が増える、
+          欲しい人が増えて品物が足りなくなる、などが主な理由です。
+        </p>
+        <p>
+          <strong>物価が上がると困るの？</strong>　給料が物価と同じくらい上がれば、暮らしは変わりません。給料より物価のほうが大きく上がると、
+          同じお金で買えるものが減るので、暮らしが苦しくなります。だから物価と給料をセットで見ることが大切です。
+        </p>
+      </EasyNote>
 
       <Section id="what" title="1. 消費者物価指数ってなに？">
         <p>

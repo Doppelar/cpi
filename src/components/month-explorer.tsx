@@ -11,6 +11,7 @@ import {
   topMovers,
 } from "@/lib/cpi/chart-data";
 import type { MonthItem } from "@/lib/cpi/types";
+import { CpiMonthNote } from "./easy-notes";
 import { ItemDetail } from "./item-detail";
 
 const PAGE = 30;
@@ -148,6 +149,8 @@ export function MonthExplorer({
           約580の品目のうち、その月に値上がり・値下がりが大きかったものを並べます。品目を押すと推移が見られます。
         </p>
       </div>
+
+      <CpiMonthNote />
 
       <div className="flex flex-wrap items-center gap-2">
         <button

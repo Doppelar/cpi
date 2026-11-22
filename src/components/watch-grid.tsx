@@ -13,6 +13,7 @@ import { formatMonth } from "@/lib/cpi/areas";
 import { formatSigned } from "@/lib/cpi/chart-data";
 import type { ItemPoint } from "@/lib/cpi/types";
 import { TooltipBox } from "./chart-parts";
+import { CpiWatchNote } from "./easy-notes";
 
 /** 身近な品目の前年同月比（直近3年）を小さなグラフで並べる */
 export function WatchGrid({
@@ -48,6 +49,7 @@ export function WatchGrid({
           前年同月比の直近3年の動き。品目ごとに縦軸の幅が違うので、大きな数字に注目してください。
         </p>
       </div>
+      <CpiWatchNote />
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         {series.map(({ name, rows, latest }) => (
           <div key={name} className="rounded-2xl border border-line bg-card p-3">

@@ -99,3 +99,11 @@ body {
 .recharts-sector:focus {
   outline: none;
 }
+
+/* 「詳しくない方向け」の切り替え */
+html:not([data-mode="easy"]) .easy-only {
+  display: none;
+}
+html[data-mode="easy"] .expert-only {
+  display: none;
+}

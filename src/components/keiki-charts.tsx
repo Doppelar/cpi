@@ -27,6 +27,7 @@ import {
 } from "@/lib/keiki/chart-data";
 import type { CoincidentGroup } from "@/lib/keiki/parse";
 import { LegendChip, RangeToggle, TooltipBox } from "./chart-parts";
+import { KeikiCiNote, KeikiContribNote, KeikiDiNote } from "./easy-notes";
 import { DataTable } from "./trend-charts";
 
 const CI_SERIES = [
@@ -141,6 +142,9 @@ export function KeikiCharts({
         title="先行・一致・遅行指数（CI）"
         description="一致指数が上がっていれば景気は拡大、下がっていれば後退の方向です。先行指数は一致指数より数か月早く動く傾向があります。"
       >
+        <div className="mb-4">
+          <KeikiCiNote />
+        </div>
         <div className="mb-3 flex flex-wrap gap-x-4 gap-y-1">
           {CI_SERIES.map((series) => (
             <LegendChip
@@ -216,6 +220,9 @@ export function KeikiCharts({
         title="一致指数を動かしたもの（寄与度）"
         description="一致指数の前月からの変化（黒い線）を、生産・雇用・販売など分野ごとの押し上げ・押し下げに分けた積み上げグラフです。"
       >
+        <div className="mb-4">
+          <KeikiContribNote />
+        </div>
         <div className="mb-3 flex flex-wrap gap-x-4 gap-y-1">
           <LegendChip color="var(--text-primary)" label="一致指数の前月差" />
           {groups.map((group) => (
@@ -313,6 +320,9 @@ export function KeikiCharts({
         title="DI（ディフュージョン・インデックス）"
         description="採用している指標のうち、3か月前より改善したものの割合（%）。50%を上回ると、改善している指標のほうが多いことを表します。"
       >
+        <div className="mb-4">
+          <KeikiDiNote />
+        </div>
         <div className="mb-3 flex flex-wrap gap-x-4 gap-y-1">
           {DI_SERIES.map((series) => (
             <LegendChip
