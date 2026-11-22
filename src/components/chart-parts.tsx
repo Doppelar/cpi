@@ -1,16 +1,17 @@
 "use client";
 
 import { formatMonth } from "@/lib/cpi/areas";
-import type { RangeId } from "@/lib/cpi/chart-data";
 import { RANGES } from "@/lib/cpi/chart-data";
 
-/** 期間の切り替え（1年・3年・全期間） */
-export function RangeToggle({
+/** 期間の切り替え（既定は 1年・3年・全期間） */
+export function RangeToggle<T extends string>({
   value,
   onChange,
+  options = RANGES as unknown as readonly { id: T; label: string }[],
 }: {
-  value: RangeId;
-  onChange: (range: RangeId) => void;
+  value: T;
+  onChange: (range: T) => void;
+  options?: readonly { id: T; label: string }[];
 }) {
   return (
     <div
@@ -18,7 +19,7 @@ export function RangeToggle({
       aria-label="表示する期間"
       className="inline-flex rounded-full border border-line bg-surface-2 p-0.5 text-sm"
     >
-      {RANGES.map((range) => (
+      {options.map((range) => (
         <button
           key={range.id}
           type="button"
