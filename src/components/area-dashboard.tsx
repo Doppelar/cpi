@@ -14,7 +14,9 @@ import {
 } from "@/lib/cpi/queries";
 import { HEADLINE_CODES, type HeadlinePoint, WATCH_NAMES } from "@/lib/cpi/types";
 import { CpiIntroNote } from "./easy-notes";
+import { getSurveyResult, RESULT_DAYS } from "@/lib/impressions/store";
 import { FeedbackLink } from "./feedback-link";
+import { ImpressionSurvey } from "./impression-survey";
 import { MonthExplorer } from "./month-explorer";
 import { TrendCharts } from "./trend-charts";
 import { WatchGrid } from "./watch-grid";
@@ -53,11 +55,13 @@ export async function AreaDashboard({
       ? Number(requestedYm)
       : latest;
 
-  const [headline, majors, monthItems, watch] = await Promise.all([
+  const survey = area === "tokyo" ? "cpi-tokyo" : "cpi-national";
+  const [headline, majors, monthItems, watch, surveyResult] = await Promise.all([
     getHeadlineSeries(area),
     getMajorSeries(area),
     getMonthItems(area, selected),
     getWatchSeries(area, WATCH_NAMES),
+    getSurveyResult(survey),
   ]);
   const headlineRows = buildHeadlineRows(headline);
   const contribRows = buildContribRows(majors, headlineRows);
@@ -182,6 +186,20 @@ export async function AreaDashboard({
       </section>
 
       <TrendCharts headline={headlineRows} contrib={contribRows} />
+
+      {total?.yoy != null && (
+        <ImpressionSurvey
+          survey={survey}
+          ym={latest}
+          value={
+            Math.abs(total.yoy) < 0.05
+              ? "ほとんど変わっていません"
+              : `${Math.abs(total.yoy).toFixed(1)}%${total.yoy > 0 ? "上がっています" : "下がっています"}`
+          }
+          initialResult={surveyResult}
+          days={RESULT_DAYS}
+        />
+      )}
 
       <MonthExplorer
         area={area}

@@ -9,16 +9,19 @@ import {
 } from "@/lib/keiki/queries";
 import { DI_PAGE_URL } from "@/lib/keiki/source";
 import { KeikiIntroNote } from "./easy-notes";
+import { getSurveyResult, RESULT_DAYS } from "@/lib/impressions/store";
 import { FeedbackLink } from "./feedback-link";
+import { ImpressionSurvey } from "./impression-survey";
 import { JudgmentBadge } from "./judgment-badge";
 import { KeikiCharts } from "./keiki-charts";
 import { KeikiMonthExplorer } from "./keiki-month-explorer";
 
 export async function KeikiDashboard({ requestedYm }: { requestedYm?: string }) {
-  const [monthly, contributions, judgments] = await Promise.all([
+  const [monthly, contributions, judgments, surveyResult] = await Promise.all([
     getKeikiMonthly(),
     getCoincidentContributions(),
     getJudgments(),
+    getSurveyResult("keiki"),
   ]);
   const ci = buildCiRows(monthly);
   if (ci.length === 0) {
@@ -130,6 +133,16 @@ export async function KeikiDashboard({ requestedYm }: { requestedYm?: string }) 
       </section>
 
       <KeikiCharts ci={ci} contrib={contrib} />
+
+      {latestJudgment?.label && (
+        <ImpressionSurvey
+          survey="keiki"
+          ym={latestJudgment.ym}
+          value={latestJudgment.label}
+          initialResult={surveyResult}
+          days={RESULT_DAYS}
+        />
+      )}
 
       <KeikiMonthExplorer
         months={months}
