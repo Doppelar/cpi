@@ -11,6 +11,7 @@ import {
   topMovers,
 } from "@/lib/cpi/chart-data";
 import type { MonthItem } from "@/lib/cpi/types";
+import { BreakdownPanel } from "./breakdown-panel";
 import { CpiMonthNote } from "./easy-notes";
 import { ItemDetail } from "./item-detail";
 
@@ -247,6 +248,9 @@ export function MonthExplorer({
           </p>
         </div>
 
+        <BreakdownPanel items={items} selected={selected} useYoy={hasYoy} onSelect={setDetail} />
+
+        <h3 className="pt-2 text-lg font-bold">品目ごとのランキング</h3>
         <div className="flex flex-wrap items-center gap-2 text-sm">
           <span className="text-ink-2">並べる基準：</span>
           {(Object.keys(SORT_LABELS) as SortKey[]).map((key) => (
