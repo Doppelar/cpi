@@ -280,7 +280,7 @@ export function KeikiCharts({
                 />
               ))}
               <Line
-                type="monotone"
+                type="linear"
                 dataKey="diff"
                 stroke="var(--text-primary)"
                 strokeWidth={1.5}
