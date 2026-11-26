@@ -1,9 +1,21 @@
 import type { Metadata } from "next";
+import { SITE_URL } from "@/lib/site";
 import Link from "next/link";
 import { MODE_INIT_SCRIPT, ModeToggle } from "@/components/explain-mode";
 import "./globals.css";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
+  alternates: { canonical: "./" },
+  openGraph: {
+    siteName: "物価のものさし",
+    locale: "ja_JP",
+    type: "website",
+  },
+  // Google Search Console の「HTMLタグ」確認用（Vercel の環境変数に入れる）
+  verification: process.env.GOOGLE_SITE_VERIFICATION
+    ? { google: process.env.GOOGLE_SITE_VERIFICATION }
+    : undefined,
   title: {
     default: "物価のものさし｜物価と景気をわかりやすく",
     template: "%s｜物価のものさし",
